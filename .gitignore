@@ -5,13 +5,21 @@
 *.slo
 *.lo
 *.o
+*.ko
 *.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
 
 # Precompiled Headers
 *.gch
 *.pch
 
 # Compiled Dynamic libraries
+*.so.*
 *.so
 *.dylib
 *.dll
@@ -22,6 +30,7 @@
 
 # Compiled Static libraries
 *.lai
+*.lo
 *.la
 *.a
 *.lib
@@ -30,3 +39,24 @@
 *.exe
 *.out
 *.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+#
+.ref/
