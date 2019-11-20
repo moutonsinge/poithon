@@ -1,0 +1,94 @@
+# prepare: convert python36.lib to libpython36.a
+#
+# # cmd
+# "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.14.26428\bin\Hostx64\x64\dumpbin.exe" /exports C:\prj\poithon\python36.dll > C:\prj\poithon\lib\python36.def
+# #edit python36.def
+# dlltool --dllname /prj/poithon/python36.dll --def /prj/poithon/lib/python36.def --output-lib /prj/poithon/lib/libpython36.a
+#
+# # cmd
+# set PYTHONPATH= (not used)
+# set PYTHONHOME=D:\ProgramData\Anaconda3
+# set PYTHONIOENCODING=utf-8
+# gcc -o test_py_c.exe src/test_py_c.c -I D:/ProgramData/Anaconda3/include -L ./lib -l python36
+#
+# # bash
+# unset(PYTHONPATH) (not used)
+# export PYTHONHOME=/d/ProgramData/Anaconda3
+# export PYTHONIOENCODING=utf-8
+# gcc -o test_py_c.exe src/test_py_c.c -I /d/ProgramData/Anaconda3/include -L ./lib -l python36
+#
+MINGW_DIR = /tdm-gcc-64
+MINGW_LIB = $(MINGW_DIR)/x86_64-w64-mingw32/lib
+MINGW_LIB32 = $(MINGW_DIR)/x86_64-w64-mingw32/lib32
+MINGW_L = $(MINGW_DIR)/lib
+MINGW_LG = $(MINGW_DIR)/lib/gcc
+MINGW_WLIB = $(MINGW_DIR)/lib/gcc/x86_64-w64-mingw32/5.1.0
+MINGW_WLIB32 = $(MINGW_DIR)/lib/gcc/x86_64-w64-mingw32/5.1.0/32
+CC = gcc
+CFLAGS =
+AR = ar
+LD = ld
+LFLAGS = -s -m i386pep --exclude-libs=libpthread.a -Bdynamic
+LFLAGS32 = -s -m i386pe --exclude-libs=libpthread.a -Bdynamic
+#
+# -Bstatic
+#
+LIB_RB = $(MINGW_LIB)/crt2.o $(MINGW_WLIB)/crtbegin.o
+LIB_RB32 = $(MINGW_LIB32)/crt2.o $(MINGW_WLIB32)/crtbegin.o
+LIB_DLLRB = $(MINGW_LIB)/dllcrt2.o $(MINGW_WLIB)/crtbegin.o
+LIB_DLLRB32 = $(MINGW_LIB32)/dllcrt2.o $(MINGW_WLIB32)/crtbegin.o
+LIB_E = $(MINGW_WLIB)/crtend.o
+LIB_E32 = $(MINGW_WLIB32)/crtend.o
+#
+LIB_DIR = -L$(MINGW_WLIB) -L$(MINGW_LG) -L$(MINGW_LIB) -L$(MINGW_L)
+LIB_DIR32 = -L$(MINGW_WLIB32) -L$(MINGW_LIB32) -L$(LIB_DIR)
+#LIB_M = -lmingw32 -lgcc -lmoldname -lmingwex -lmsvcrt -lpthread
+LIB_M = -lmingw32 -lgcc -lmoldname -lmingwex -lmsvcrt -lwinpthread
+LIB_W = -ladvapi32 -lshell32 -lgdi32 -luser32 -lkernel32 -lwsock32
+LIB_FIX = $(LIB_M) $(LIB_W)
+#
+# -lcomdlg32 --subsystem windows
+# -ld3d9 -ld3dx9
+# -ld3d11 -ld3dx11
+# -lapi-ms-win-core-winrt-l1-1-0 -lapi-ms-win-core-winrt-string-l1-1-0
+#
+LIB_PRE = $(LIB_RB) $(LIB_DIR)
+LIB_PRE32 = $(LIB_RB32) $(LIB_DIR32)
+LIB_DLLPRE = $(LIB_DLLRB) $(LIB_DIR)
+LIB_DLLPRE32 = $(LIB_DLLRB32) $(LIB_DIR32)
+LIB_POST = $(LIB_FIX) $(LIB_E)
+LIB_POST32 = $(LIB_FIX) $(LIB_E32)
+#
+INC = D:/ProgramData/Anaconda3/include
+LIBPATH = -L./lib
+LIBPYTHON = -lpython36
+#
+TGT_PY_C = test_py_c
+TGT_PY_CPP = test_py_cpp
+
+all : $(TGT_PY_C).exe $(TGT_PY_CPP).exe
+
+clean :
+	del *.o
+	del *.o64
+	del *.o32
+	del *.s
+	del *.s64
+	del *.s32
+
+$(TGT_PY_C).exe : $(TGT_PY_C).o
+	$(LD) -o $@ $(LFLAGS) $(LIB_PRE) $< $(LIBPATH) $(LIBPYTHON) $(LIB_POST)
+
+#$(TGT_PY_C).o : src/$(TGT_PY_C).c src/$(TGT_PY_C).h
+$(TGT_PY_C).o : src/$(TGT_PY_C).c
+	$(CC) -m64 -o $*.s -S $(CFLAGS) -I . -I $(INC) $<
+	$(CC) -m64 -o $@ -c $(CFLAGS) -I . -I $(INC) $<
+
+$(TGT_PY_CPP).exe : $(TGT_PY_CPP).o
+	$(LD) -o $@ $(LFLAGS) $(LIB_PRE) $< $(LIBPATH) $(LIBPYTHON) -lstdc++ $(LIB_POST)
+
+#$(TGT_PY_CPP).o : src/$(TGT_PY_CPP).cpp src/$(TGT_PY_CPP).h
+$(TGT_PY_CPP).o : src/$(TGT_PY_CPP).cpp
+	$(CC) -m64 -o $*.s -S $(CFLAGS) -I . -I $(INC) $<
+	$(CC) -m64 -o $@ -c $(CFLAGS) -I . -I $(INC) $<
+
